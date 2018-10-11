@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>File & Blob</title>
+    <link rel="stylesheet" type="text/css" href="static/bootstrap/dist/css/bootstrap.css">
+</head>
+
+<body>
+    <div class="container">
+        <div class="row">
+            <main class="col-md">
+                <section id="文件选择" class="jumbotron">
+                    <h2>文件选择</h2>
+                    <form>
+                        <div class="form-group row">
+                            <label class="col-sm-2 col-form-label">选择文件</label>
+                            <div class="col-sm-10">
+                                <input class="form-control-file" type="file" onchange="handleFiles(this)">
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <ul>
+                                <li>文件名称：<span id="fileName"></span></li>
+                                <li>文件大小：<span id="fileSize"></span></li>
+                                <li>文件MIME：<span id="fileType"></span></li>
+                            </ul>
+                        </div>
+<!--                         <div class="form-group row">
+                            <div class="col-sm">
+                                <div class="progress">
+                                    <div class="progress-bar progress-bar-striped progress-bar-animated" style="width: 25%"></div>
+                                </div>
+                            </div>
+                        </div> -->
+                    </form>
+                </section>
+                <section id="文件内容显示/修改" class="jumbotron">
+                    <h2>文件内容显示/修改</h2>
+                    <form>
+                        <div class="form-group row">
+                            <div class="col-sm">
+                                对于文本文件或者图片，我们可以直接在浏览器中显示，对于其他文件，需要做相应的处理，这里只提供简单文本文件/图片的示例
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-sm-2 col-form-label">选择文本文件</label>
+                            <div class="col-sm-10">
+                                <input class="form-control-file" type="file" onchange="handleTextFiles(this)">
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-sm-2 col-form-label">文件内容</label>
+                            <div class="col-sm-10">
+                                <textarea id="fileContent" class="form-control"></textarea>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-sm-10 offset-sm-2">
+                                <button type="button" class="btn btn-outline-primary" onclick="onSave()">Save</button>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-sm-2 col-form-label">选择图片</label>
+                            <div class="col-sm-10">
+                                <input class="form-control-file" type="file" onchange="handleImageFiles(this)" accept="image/png, image/jpeg">
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-sm-10 offset-sm-2">
+                                <img id="img" width="100%">
+                            </div>
+                        </div>
+                        <div class="form-group row" id="imageError" style="visibility: hidden;">
+                            <div class="col-sm-10 offset-sm-2">
+                                <div class="alert alert-danger" role="alert">
+                                  This is a danger alert—check it out!
+                                </div>
+                            </div>
+                        </div>
+
+                    </form>
+                </section>
+                <section id="文件上传" class="jumbotron">
+                    <h2>文件上传</h2>
+                    <form>
+                        <div class="form-group row">
+                            <label class="col-sm-2 col-form-label">选择文件</label>
+                            <div class="col-sm-10">
+                                <input class="form-control-file" type="file" onchange="uploadFiles(this)" multiple>
+                                <ul id="fileList"></ul>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-sm-10 offset-sm-2">
+                                <button type="button" class="btn btn-outline-primary" onclick="onUpload()">Upload</button>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-sm-10 offset-sm-2">
+                                <div id="uploadResult" class="alert">
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </section>
+            </main>
+        </div>
+    </div>
+    <script type="text/javascript">
+    function handleFiles(fileElement) {
+        var file = fileElement.files[0];
+        document.getElementById('fileName').innerHTML = file.name;
+        document.getElementById('fileSize').innerHTML = file.size;
+        document.getElementById('fileType').innerHTML = file.type;
+    }
+
+    var textFile;
+    function handleTextFiles(fileElement) {
+        textFile = fileElement.files[0];
+        var fileReader = new FileReader()
+        fileReader.onload = function(e) {
+            document.getElementById('fileContent').value = e.target.result;
+        }
+        fileReader.readAsText(textFile);
+    }
+
+    function onSave() {
+        var link = document.createElement('a');
+        link.download = textFile.name;
+        link.style.display = 'none';
+
+        var content = document.getElementById('fileContent').value;
+        var blob = new Blob([content])
+
+        link.href = URL.createObjectURL(blob);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    function handleImageFiles(fileElement) {
+        var file = fileElement.files[0]
+        var imageType = /image.*/;
+        if (file.type.match(imageType)) {
+            // 方法一
+            {
+                document.getElementById('img').src = window.URL.createObjectURL(file)
+            }
+            // 方法二
+            {
+                var fileReader = new FileReader()
+                fileReader.onload = function(e) {
+                    document.getElementById('img').src = e.target.result;
+                }
+                fileReader.readAsDataURL(file);
+            }
+        } else {
+            document.getElementById('imageError').style.visibility = "";
+        }
+    }
+
+    var uploadingFiles;
+    function uploadFiles(fileElement) {
+        uploadingFiles = fileElement.files;
+        var fileList = document.getElementById('fileList');
+        var template = ""
+        for (var i = 0; i < uploadingFiles.length; i++) {
+            var file = uploadingFiles[i]
+            template += `<li>File Name: ${file.name}, File Size: ${file.size}, File MIME: ${file.type}</li>`
+        }
+        fileList.innerHTML = template
+    }
+
+    function onUpload() {
+        var uploadResult = document.getElementById('uploadResult')
+        if (uploadingFiles.length > 0) {
+            var formData = new FormData()
+            formData.delete('files')
+            for (var i = 0; i < uploadingFiles.length; i++) {
+                formData.append('files', uploadingFiles[i])
+            }
+            axios.post('/api/upload', formData).then((response) => {
+                console.log(response)
+                uploadResult.classList.remove('alert-danger')
+                uploadResult.classList.add('alert-success')
+                uploadResult.innerHTML = "File Upload Success!"
+            }, (error) => {
+                console.log(error)
+            })
+        } else {
+            uploadResult.classList.remove('alert-success')
+            uploadResult.classList.add('alert-danger')
+            uploadResult.innerHTML = "No File Selected!"
+        }
+    }
+    </script>
+    <script type="text/javascript" src="static/axios/dist/axios.js"></script>
+</body>
+
+</html>
