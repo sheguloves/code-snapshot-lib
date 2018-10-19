@@ -182,7 +182,7 @@
 
     function onUpload() {
         var uploadResult = document.getElementById('uploadResult')
-        if (uploadingFiles.length > 0) {
+        if (uploadingFiles && uploadingFiles.length > 0) {
             var formData = new FormData()
             formData.delete('files')
             for (var i = 0; i < uploadingFiles.length; i++) {

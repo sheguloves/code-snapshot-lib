@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Post Download</title>
+    <link rel="stylesheet" type="text/css" href="static/bootstrap/dist/css/bootstrap.css">
+</head>
+
+<body>
+    <div class="container">
+        <div class="row">
+            <main class="col-md">
+                <section id="POST请求下载文件" class="jumbotron">
+                    <h2>POST请求下载文件</h2>
+                    <form>
+                        <div class="form-group row">
+                            <label class="col-sm-2 col-form-label">文件列表：</label>
+                            <div id="fileList" class="col-sm-10">
+
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-sm-10">
+                                <button class="form-control" onclick="downloadFile()">Download</button>
+                            </div>
+                        </div>
+                    </form>
+                </section>
+            </main>
+        </div>
+    </div>
+    <script type="text/javascript">
+    function getFileList() {
+        axios.get('/api/files').then(response => {
+            let files = response.data;
+            if (files && files.length > 0) {
+                let ul = document.createElement('ul')
+                ul.onclick = downloadFile
+                let lis = []
+                files.forEach(item => {
+                    lis.push(`<li><a href="" onclick="return false;">${item}</a></li>`)
+                })
+                ul.innerHTML = lis.join('')
+                document.getElementById('fileList').appendChild(ul)
+            }
+        })
+    }
+    function downloadFile(event) {
+        let fileName = event.target.innerText
+        axios.post('/api/download', {
+            file: fileName
+        }, {
+            responseType:'blob'
+        }).then((response) => {
+            browserDownload(response.data, fileName)
+        }, (error) => {
+            console.log(error)
+        })
+    }
+
+    function browserDownload(blobContent, fileName) {
+        var link = document.createElement('a');
+        link.download = fileName;
+        link.style.display = 'none';
+
+        var blob = new Blob([blobContent])
+
+        link.href = URL.createObjectURL(blob);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    window.onload = () => {
+        getFileList()
+    }
+    </script>
+    <script type="text/javascript" src="static/axios/dist/axios.js"></script>
+
+</html>
