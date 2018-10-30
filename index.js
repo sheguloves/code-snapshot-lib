@@ -21,10 +21,11 @@ app.use(bodyParser.urlencoded({
 }));
 
 app.use('/upload', express.static(path.join(__dirname, './upload')))
-app.use('/static', express.static(path.join(__dirname, './node_modules')))
+app.use('/assets', express.static(path.join(__dirname, './assets')))
+app.use('/pages', express.static(path.join(__dirname, './static')))
 
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, './static', 'index.html'))
+    res.sendFile(path.join(__dirname, 'index.html'))
 })
 
 app.get('/api/files', (req, res) => {
@@ -36,15 +37,7 @@ app.get('/api/files', (req, res) => {
     });
 })
 
-app.get('/file-blob', (req, res) => {
-    res.sendFile(path.join(__dirname, './static', 'file-blob.html'))
-})
-app.get('/post-download', (req, res) => {
-    res.sendFile(path.join(__dirname, './static', 'post-download.html'))
-})
-
 app.post('/api/download', (req, res) => {
-    console.log(req)
     let fileName = req.body.file
     res.sendFile(path.join(__dirname, './upload', fileName))
 })
