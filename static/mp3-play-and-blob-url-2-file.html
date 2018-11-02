@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>MP3播放、Blob URL MP3下载</title>
+    <link rel="stylesheet" type="text/css" href="../assets/css/bootstrap.min.css">
+</head>
+
+<body>
+    <div class="container">
+        <div class="row">
+            <main class="col-md">
+                <section id="文件选择" class="jumbotron">
+                    <h2>MP3文件播放</h2>
+                    <form>
+                        <div class="form-group row">
+                            <label class="col-sm-2 col-form-label">选择文件</label>
+                            <div class="col-sm-10">
+                                <input class="form-control-file" type="file" onchange="handleFiles(this)">
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-sm-2 col-form-label"></label>
+                            <div class="col-sm-10">
+                                <ul>
+                                    <li>文件名称：<span id="fileName"></span></li>
+                                    <li>文件大小：<span id="fileSize"></span></li>
+                                    <li>文件MIME：<span id="fileType"></span></li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-sm-12">
+                                <video id="mp3" controls></video>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-sm-10">
+                                <button class="form-control" onclick="downloadFile()">Download</button>
+                            </div>
+                        </div>
+                    </form>
+                </section>
+            </main>
+        </div>
+    </div>
+    <script type="text/javascript">
+    function handleFiles(fileElement) {
+        var file = fileElement.files[0];
+        document.getElementById('fileName').innerHTML = file.name;
+        document.getElementById('fileSize').innerHTML = file.size;
+        document.getElementById('fileType').innerHTML = file.type;
+
+        handleTextFiles(file)
+    }
+
+    function handleTextFiles(file) {
+        var fileReader = new FileReader()
+        fileReader.onload = function(e) {
+            document.getElementById('mp3').src = e.target.result;
+        }
+        fileReader.readAsDataURL(file);
+    }
+
+    function downloadFile(event) {
+        let mp3 = document.getElementById("mp3");
+        var blob = base64Img2Blob(mp3.src);
+
+        var link = document.createElement('a');
+        link.download = "";
+        link.style.display = 'none';
+
+        link.href = URL.createObjectURL(blob);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    function base64Img2Blob(code){
+        var parts = code.split(';base64,');
+        var contentType = parts[0].split(':')[1];
+        var raw = window.atob(parts[1]);
+        var rawLength = raw.length;
+
+        var uInt8Array = new Uint8Array(rawLength);
+
+        for (var i = 0; i < rawLength; ++i) {
+          uInt8Array[i] = raw.charCodeAt(i);
+        }
+
+        return new Blob([uInt8Array], {type: contentType});
+    }
+
+    </script>
+    <script type="text/javascript" src="../assets/js/axios.min.js"></script>
+</body>
+
+</html>
