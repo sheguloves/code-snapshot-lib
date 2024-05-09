@@ -17,7 +17,7 @@ const upload = multer({storage: storage})
 
 app.use( bodyParser.json() );
 app.use(bodyParser.urlencoded({
-  extended: true
+    extended: true
 }));
 
 app.use('/upload', express.static(path.join(__dirname, './upload')))
@@ -35,12 +35,12 @@ app.get('/api/files', (req, res) => {
         }
         res.send(files)
     });
-})
+});
 
 app.post('/api/download', (req, res) => {
     let fileName = req.body.file
     res.sendFile(path.join(__dirname, './upload', fileName))
-})
+});
 
 app.post('/api/upload', upload.array('files'), (req, res) => {
     let files = req.files
@@ -52,8 +52,17 @@ app.post('/api/upload', upload.array('files'), (req, res) => {
     } else {
         res.status(400).send('No File Exist!')
     }
-})
+});
+
+app.get('/api/jsonp', (req, res) => {
+    const callback = req.query.callback;
+    const data = { 
+        description: 'This jsonp testing',
+    };
+
+    res.send(`${callback}(${JSON.stringify(data)})`);
+});
 
 app.listen(PORT, () => {
     console.log(`Server is running on ${PORT}!`)
-})
+});
